@@ -13,6 +13,14 @@
 //     ],
 //     ['OR']
 // ];
+/*
+'[
+    ["A"],
+    ["B"],
+    ["C",["C1",["C1-a","C1-a","C1-c","C1-d"]]]
+]'
+* */
+
 
 window.onload = () => {
     //localStorage.clear();
@@ -25,6 +33,7 @@ const dynamicSelect = {
                         selectElementsMainContainerId: 'selectHouse',
                         newOptionTextBoxId: 'newOption',
                         firstSelectBoxId: 'firstSelectBox'
+        // initData: dummyData
          }
     ) {
         let newOptionTextBox = document.createElement('input');
@@ -64,6 +73,7 @@ const dynamicSelect = {
             data.push([newOptionValue]);
             dynamicSelect.tempContainer = data;
             dynamicSelect.set(dynamicSelect.tempContainer);
+            dynamicSelect.createOption(newOptionValue, document.getElementById('firstSelectBox'))
             console.log(dynamicSelect.get());
         }
         else{
@@ -126,8 +136,10 @@ const dynamicSelect = {
     loadOptions(targetSelect) {
         //console.log(targetSelect)
         this.createOption(this.selectAnOptionText, targetSelect);
+        console.log(this.get());
         if(Array.isArray(this.get())){
             this.get().forEach(item => {
+                console.log('siradaki item:', item)
                 if(Array.isArray(item)){
                     this.createOption(item[0], targetSelect);
                 }else if(typeof item==='string'){
