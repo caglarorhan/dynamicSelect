@@ -1,25 +1,22 @@
 // let dummyData =[
 //     ['TX',[
-//         ['Austin',['Leander','Williamson']],
+//         ['Austin',[['Leander'],['Williamson']]],
 //         ['Houston'],
-//         ['San Antonio',['Bandera','Bexar','Comal','Medina']]
+//         ['San Antonio',[['Bandera'],['Bexar'],['Comal'],['Medina']]],
+//         ['Dallas']
 //     ]
 //     ],
 //     ['CA',[
 //         ['Santa Clara'],
-//         ['San Jose',['a','b',['c',['x','y','z','@']]]],
-//         ['San Francisco',['g']]
+//         ['San Francisco',[['g']]]
 //     ]
 //     ],
-//     ['OR']
+//     ['OR'],
+//     ['NY'],
+//     ['UT']
 // ];
-/*
-'[
-    ["A"],
-    ["B"],
-    ["C",["C1",["C1-a","C1-a","C1-c","C1-d"]]]
-]'
-* */
+
+
 
 
 window.onload = () => {
@@ -33,7 +30,7 @@ const dynamicSelect = {
                         selectElementsMainContainerId: 'selectHouse',
                         newOptionTextBoxId: 'newOption',
                         firstSelectBoxId: 'firstSelectBox'
-        // initData: dummyData
+        //initData: dummyData
          }
     ) {
         let newOptionTextBox = document.createElement('input');
@@ -63,7 +60,7 @@ const dynamicSelect = {
         if(!newOptionValue || newOptionValue===""){return false;}
         let parentSelection = dynamicSelect.selectHouse.querySelector('select:last-of-type');
         let targetNodeValue = (parentSelection.value !== dynamicSelect.selectAnOptionText) ? parentSelection.value : parentSelection.id;
-        console.log(`targetNodeValue:${targetNodeValue}`)
+        //console.log(`targetNodeValue:${targetNodeValue}`)
 
         if (document.querySelector('#firstSelectBox').length === 1) {
             dynamicSelect.set([[`${newOptionValue}`]]);
@@ -74,7 +71,7 @@ const dynamicSelect = {
             dynamicSelect.tempContainer = data;
             dynamicSelect.set(dynamicSelect.tempContainer);
             dynamicSelect.createOption(newOptionValue, document.getElementById('firstSelectBox'))
-            console.log(dynamicSelect.get());
+            //console.log(dynamicSelect.get());
         }
         else{
             let data = dynamicSelect.get();
@@ -89,9 +86,15 @@ const dynamicSelect = {
             dynamicSelect.runRawCode('console.log('+pathString+')');
 
 
-            dynamicSelect.runRawCode('('+pathString+'.length==2 && Array.isArray('+pathString+'[1])?'+pathString+'[1].push("'+newOptionValue+'"):'+pathString+'.length==1?'+pathString+'.push(["'+newOptionValue+'"]):'+pathString+'['+indexPath[indexPath.length - 1]+']=(["'+targetNodeValue+'",["'+newOptionValue+'"]]))');
+            dynamicSelect.runRawCode(
+                '('+pathString+'.length==2' +
+                '?'+pathString+'[1].push(["'+newOptionValue+'"])' +
+                ':'+pathString+'.length==1' +
+                '?'+pathString+'.push([["'+newOptionValue+'"]])' +
+                ':'+pathString+'['+indexPath[indexPath.length - 1]+']=(["'+targetNodeValue+'",["'+newOptionValue+'"]]))');
+
             dynamicSelect.set(dynamicSelect.tempContainer);
-            console.log(dynamicSelect.get());
+            //console.log(dynamicSelect.get());
             // ended
         }
 
@@ -139,7 +142,7 @@ const dynamicSelect = {
         console.log(this.get());
         if(Array.isArray(this.get())){
             this.get().forEach(item => {
-                console.log('siradaki item:', item)
+                //console.log('next item:', item)
                 if(Array.isArray(item)){
                     this.createOption(item[0], targetSelect);
                 }else if(typeof item==='string'){
@@ -160,10 +163,12 @@ const dynamicSelect = {
         //console.log(event.target)
         let searchTerm = event.target.value;
         let srcSelectElement = event.target;
-        this.get().forEach(data => {
-            //console.log(data)
-            this.findFromArray(searchTerm, data, srcSelectElement)
-        })
+        this.get().every(data => {
+                //console.log('data',data)
+                return !this.findFromArray(searchTerm, data, srcSelectElement);
+            }
+
+        )
     },
     reAttachEvents() {
         //console.log('event attachments')
@@ -188,37 +193,53 @@ const dynamicSelect = {
 
     },
     findFromArray(searchTerm, listArray, srcSelectElement) {
-        //console.log(searchTerm);
-        //console.log(srcSelectElement)
-        if (searchTerm === listArray[0] && listArray.length > 1) {
-            // found something
-            let newSelectElement = this.createSelect(searchTerm);
-            newSelectElement.className = 'selectElements';
-//
-            srcSelectElement.insertAdjacentElement('afterend', newSelectElement);
-            //
-
-            dynamicSelect.createOption(this.selectAnOptionText, newSelectElement)
-            listArray[1].forEach(item => {
-                if (typeof item !== 'string') {
-                    dynamicSelect.createOption(item[0], newSelectElement)
-                } else {
-                    dynamicSelect.createOption(item, newSelectElement)
-                }
-
-            })
-            this.reAttachEvents();
-        } else {
-            if (listArray.length > 1) {
-                //console.log(listArray)
+        console.log('------------------------- SEARCH FOR IT --------------------------------')
+        if(searchTerm===dynamicSelect.selectAnOptionText){return false;}
+        console.log('Search term:',searchTerm, 'listArray:',listArray);
+        if(searchTerm===listArray[0]){ //++++++++++++++++++++++++++++++++++++++++++++++++++++
+            console.log('Search term matched!')
+            if(listArray.length===1){
+                // there is no sub for this option value. So no need to create a new selectbox
+            }else if(listArray.length===2){
+                let newSelectElement = this.createSelect(searchTerm);
+                newSelectElement.className = 'selectElements';
+                srcSelectElement.insertAdjacentElement('afterend', newSelectElement);
+                dynamicSelect.createOption(this.selectAnOptionText, newSelectElement);
                 listArray[1].forEach(item => {
+                        dynamicSelect.createOption(item[0], newSelectElement)
+                })
+                // re attach event to newly created selectboxes
+                this.reAttachEvents();
+            }
+        return true;
+        }
+        else {
+            console.log('Ustte bulunamadi simdi iceriye girilecek')
+            // if not matched with first item and
+            if (listArray.length>1) { // if first array has more than one element (not a single string)
+                console.log(listArray, ' icerisine bakilacak')
+                listArray[1].forEach(item => {
+
                     if (Array.isArray(item[1]) && item.length > 1) {
                         this.findFromArray(searchTerm, item, srcSelectElement)
+                    }else if(item===searchTerm){
+                        if(!document.getElementById(searchTerm)){
+                            let newSelectElement = this.createSelect(searchTerm);
+                            newSelectElement.className = 'selectElementsXX';
+                            srcSelectElement.insertAdjacentElement('afterend', newSelectElement);
+                            dynamicSelect.createOption(this.selectAnOptionText, newSelectElement);
+                        }
+                        dynamicSelect.createOption(item, document.getElementById(searchTerm));
                     }
                 })
+            }else{
+                //nothing to do because the only string element of first array doesnt matched and there is no more element in this array
             }
-
         }
+    },
+    selectedLastItem(){
+        let parentSelection = dynamicSelect.selectHouse.querySelector('select:last-of-type');
+        return (parentSelection.value !== dynamicSelect.selectAnOptionText) ? parentSelection.value : parentSelection.id;
     }
 }
 
