@@ -3,6 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script>
+        // let dummyData =[
+        //     ['TX',[
+        //         ['Austin',[['Leander'],['Williamson']]],
+        //         ['Houston'],
+        //         ['San Antonio',[['Bandera'],['Bexar'],['Comal'],['Medina']]],
+        //         ['Dallas']
+        //     ]
+        //     ],
+        //     ['CA',[
+        //         ['Santa Clara'],
+        //         ['San Francisco',[['g']]]
+        //     ]
+        //     ],
+        //     ['OR'],
+        //     ['NY'],
+        //     ['UT']
+        // ];
+        let configs = {
+            selectElementsMainContainerId: 'selectHouse',
+            newOptionTextBoxId: 'newOption',
+            firstSelectBoxId: 'firstSelectBox',
+            resetButtonId:'resetAll',
+            selectAnOptionText: 'Select an option',
+            mustUnique:false,
+            selectElementsClassName:'selectElements',
+            // initData: dummyData
+        }
+        window.onload = ()=>{
+            dynamicSelect.init(configs)
+        }
+
+    </script>
     <script src="cascade.js"></script>
 
 
@@ -17,8 +50,9 @@
         color:purple;
     }
 </style>
-<body><button id="resetAll">RESET ALL</button>
-<body><button onclick="alert(dynamicSelect.selectedLastItem())">Last Selected Value</button>
+<body>
+<button id="resetAll">RESET ALL</button>
+<button onclick="alert(dynamicSelect.selectedLastItem())">Last Selected Value</button>
 <div id="selectHouse">
 
 </div>

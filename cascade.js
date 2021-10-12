@@ -1,38 +1,23 @@
-// let dummyData =[
-//     ['TX',[
-//         ['Austin',[['Leander'],['Williamson']]],
-//         ['Houston'],
-//         ['San Antonio',[['Bandera'],['Bexar'],['Comal'],['Medina']]],
-//         ['Dallas']
-//     ]
-//     ],
-//     ['CA',[
-//         ['Santa Clara'],
-//         ['San Francisco',[['g']]]
-//     ]
-//     ],
-//     ['OR'],
-//     ['NY'],
-//     ['UT']
-// ];
 
 
-
-
-window.onload = () => {
-    //localStorage.clear();
-    dynamicSelect.init();
-    resetAll();
-}
 
 const dynamicSelect = {
     init(configs = {
                         selectElementsMainContainerId: 'selectHouse',
                         newOptionTextBoxId: 'newOption',
-                        firstSelectBoxId: 'firstSelectBox'
-        //initData: dummyData
+                        firstSelectBoxId: 'firstSelectBox',
+                        resetButtonId:'resetAll',
+                        selectAnOptionText: 'Select an option',
+                        mustUnique:false,
+                        selectElementsClassName:'selectElements',
          }
     ) {
+        this.mustUnique = configs.mustUnique;
+        this.tempContainer=null;
+        this.selectElementsClassName = configs.selectElementsClassName;
+        this.firstSelectBoxId=configs.firstSelectBoxId;
+        this.resetAll(configs.resetButtonId);
+        this.selectAnOptionText=configs.selectAnOptionText;
         let newOptionTextBox = document.createElement('input');
         newOptionTextBox.id = configs.newOptionTextBoxId;
         this.selectHouse = document.getElementById(configs.selectElementsMainContainerId);
@@ -40,65 +25,62 @@ const dynamicSelect = {
         this.newOptionBox = newOptionTextBox;
         this.selectHouse.appendChild(this.createSelect(configs.firstSelectBoxId));
         if(configs.initData){
-            console.log('init data bulundu kullaniclacak')
+            //console.log('init data found, will be used')
             this.set(configs.initData)
         }
 
 
         //console.log(this.get());
-        this.loadOptions(document.querySelector(`#${configs.firstSelectBoxId}`));
+        this.loadOptions(document.getElementById(this.firstSelectBoxId));
         this.reAttachEvents();
-        newOptionTextBox.addEventListener('change', this.add);
+        newOptionTextBox.addEventListener('change', ()=>{
+            this.add()
+        });
 
     },
-    mustUnique: false,
-    selectHouse: document.getElementById('selectHouse'),
-    selectAnOptionText: 'Select an option',
-    tempContainer:null,
     add(){
-        let newOptionValue = dynamicSelect.newOptionBox.value;
+        let newOptionValue = this.newOptionBox.value;
         if(!newOptionValue || newOptionValue===""){return false;}
-        let parentSelection = dynamicSelect.selectHouse.querySelector('select:last-of-type');
+        let parentSelection = this.selectHouse.querySelector('select:last-of-type');
         let targetNodeValue = (parentSelection.value !== dynamicSelect.selectAnOptionText) ? parentSelection.value : parentSelection.id;
         //console.log(`targetNodeValue:${targetNodeValue}`)
-
-        if (document.querySelector('#firstSelectBox').length === 1) {
-            dynamicSelect.set([[`${newOptionValue}`]]);
-            dynamicSelect.createOption(newOptionValue, document.querySelector('#firstSelectBox'));
-        } else if(targetNodeValue==='firstSelectBox'){
-            let data = dynamicSelect.get();
+        //console.log(this)
+        if (document.getElementById(this.firstSelectBoxId).length === 1) {
+            this.set([[`${newOptionValue}`]]);
+            this.createOption(newOptionValue, document.getElementById(this.firstSelectBoxId));
+        } else if(targetNodeValue===this.firstSelectBoxId){
+            let data = this.get();
             data.push([newOptionValue]);
-            dynamicSelect.tempContainer = data;
-            dynamicSelect.set(dynamicSelect.tempContainer);
-            dynamicSelect.createOption(newOptionValue, document.getElementById('firstSelectBox'))
+            this.tempContainer = data;
+            this.set(this.tempContainer);
+            this.createOption(newOptionValue, document.getElementById(this.firstSelectBoxId))
             //console.log(dynamicSelect.get());
         }
         else{
-            let data = dynamicSelect.get();
-            let indexPath = dynamicSelect.locateTarget(targetNodeValue, data);
-            dynamicSelect.tempContainer = data;
+            let data = this.get();
+            let indexPath = this.locateTarget(targetNodeValue, data);
+            this.tempContainer = data;
 
             let pathString = `dynamicSelect.tempContainer`;
             for (let i = 0; i < indexPath.length - 1; i++) {
                 pathString += `[${indexPath[i]}]`;
             }
-            console.log(`Bulunan ve hedeflenen path: ${pathString}`);
-            dynamicSelect.runRawCode('console.log('+pathString+')');
+            //console.log(`Found and targetted path: ${pathString}`);
 
 
-            dynamicSelect.runRawCode(
+            this.runRawCode(
                 '('+pathString+'.length==2' +
                 '?'+pathString+'[1].push(["'+newOptionValue+'"])' +
                 ':'+pathString+'.length==1' +
                 '?'+pathString+'.push([["'+newOptionValue+'"]])' +
                 ':'+pathString+'['+indexPath[indexPath.length - 1]+']=(["'+targetNodeValue+'",["'+newOptionValue+'"]]))');
 
-            dynamicSelect.set(dynamicSelect.tempContainer);
+            this.set(this.tempContainer);
             //console.log(dynamicSelect.get());
             // ended
         }
 
-        dynamicSelect.newOptionBox.value = '';
+        this.newOptionBox.value = '';
         return true;
     },
     get(){
@@ -112,7 +94,7 @@ const dynamicSelect = {
             for (let x = 0; x < data.length; x++) {
                 if (Array.isArray(data[x])) {
                     //console.log(data[x].flat(999))
-                    if (data[x].flat(Infinity).includes(targetNodeValue)) {
+                    if (data[x].flat(Infinity).includes(targetNodeValue)) { //might be buggy because of values in values
                         indexPath.push(x);
                         this.locateTarget(targetNodeValue, data[x], indexPath)
                     }
@@ -137,9 +119,9 @@ const dynamicSelect = {
         targetSelect.appendChild(newOptionElement);
     },
     loadOptions(targetSelect) {
-        //console.log(targetSelect)
+        //console.log(this)
         this.createOption(this.selectAnOptionText, targetSelect);
-        console.log(this.get());
+        //console.log(this.get());
         if(Array.isArray(this.get())){
             this.get().forEach(item => {
                 //console.log('next item:', item)
@@ -156,7 +138,7 @@ const dynamicSelect = {
     createSelect(withThisId) {
         let newSelectElement = document.createElement('select');
         newSelectElement.id = withThisId;
-        newSelectElement.className='selectElements';
+        newSelectElement.className = this.selectElementsClassName;
         return newSelectElement;
     },
     searchOverData(event) {
@@ -172,41 +154,42 @@ const dynamicSelect = {
     },
     reAttachEvents() {
         //console.log('event attachments')
-        document.querySelectorAll('.selectElements').forEach(selElm => {
-            selElm.removeEventListener("change", dynamicSelect.selectEventListeners, true);
-            selElm.addEventListener("change", dynamicSelect.selectEventListeners, true)
+        document.querySelectorAll(`.${this.selectElementsClassName}`).forEach(selElm => {
+            selElm.removeEventListener("change", (e)=>{this.selectEventListeners(e)}, true);
+            selElm.addEventListener("change", (e)=>{this.selectEventListeners(e)}, true)
         })
     },
     selectEventListeners(e) {
         //console.log('change event fired')
-        dynamicSelect.clearNextSiblings(e.target.id);
-        dynamicSelect.searchOverData(e);
+        //console.log(this)
+        this.clearNextSiblings(e.target.id);
+        this.searchOverData(e);
 
     },
     clearNextSiblings(selElmID) {
         //console.log(selElmID)
-        let lastSelect = document.querySelector('#selectHouse select:last-of-type');
+        let lastSelect = document.querySelector(`#${this.selectHouse.id} select:last-of-type`);
         while (lastSelect.id !== selElmID) {
             lastSelect.remove();
-            lastSelect = document.querySelector('#selectHouse select:last-of-type');
+            lastSelect = document.querySelector(`#${this.selectHouse.id} select:last-of-type`);
         }
 
     },
     findFromArray(searchTerm, listArray, srcSelectElement) {
-        console.log('------------------------- SEARCH FOR IT --------------------------------')
-        if(searchTerm===dynamicSelect.selectAnOptionText){return false;}
-        console.log('Search term:',searchTerm, 'listArray:',listArray);
+        //console.log('------------------------- SEARCH FOR IT --------------------------------')
+        if(searchTerm===this.selectAnOptionText){return false;}
+        //console.log('Search term:',searchTerm, 'listArray:',listArray);
         if(searchTerm===listArray[0]){ //++++++++++++++++++++++++++++++++++++++++++++++++++++
-            console.log('Search term matched!')
+            //console.log('Search term matched!')
             if(listArray.length===1){
                 // there is no sub for this option value. So no need to create a new selectbox
             }else if(listArray.length===2){
                 let newSelectElement = this.createSelect(searchTerm);
-                newSelectElement.className = 'selectElements';
+                newSelectElement.className = this.selectElementsClassName;
                 srcSelectElement.insertAdjacentElement('afterend', newSelectElement);
-                dynamicSelect.createOption(this.selectAnOptionText, newSelectElement);
+                this.createOption(this.selectAnOptionText, newSelectElement);
                 listArray[1].forEach(item => {
-                        dynamicSelect.createOption(item[0], newSelectElement)
+                        this.createOption(item[0], newSelectElement)
                 })
                 // re attach event to newly created selectboxes
                 this.reAttachEvents();
@@ -214,10 +197,10 @@ const dynamicSelect = {
         return true;
         }
         else {
-            console.log('Ustte bulunamadi simdi iceriye girilecek')
+            //console.log('Not found! Now entering sub arrays...')
             // if not matched with first item and
             if (listArray.length>1) { // if first array has more than one element (not a single string)
-                console.log(listArray, ' icerisine bakilacak')
+                //console.log(listArray, ' lookup inside')
                 listArray[1].forEach(item => {
 
                     if (Array.isArray(item[1]) && item.length > 1) {
@@ -225,11 +208,11 @@ const dynamicSelect = {
                     }else if(item===searchTerm){
                         if(!document.getElementById(searchTerm)){
                             let newSelectElement = this.createSelect(searchTerm);
-                            newSelectElement.className = 'selectElementsXX';
+                            newSelectElement.className = this.selectElementsClassName;
                             srcSelectElement.insertAdjacentElement('afterend', newSelectElement);
-                            dynamicSelect.createOption(this.selectAnOptionText, newSelectElement);
+                            this.createOption(this.selectAnOptionText, newSelectElement);
                         }
-                        dynamicSelect.createOption(item, document.getElementById(searchTerm));
+                        this.createOption(item, document.getElementById(searchTerm));
                     }
                 })
             }else{
@@ -238,16 +221,15 @@ const dynamicSelect = {
         }
     },
     selectedLastItem(){
-        let parentSelection = dynamicSelect.selectHouse.querySelector('select:last-of-type');
-        return (parentSelection.value !== dynamicSelect.selectAnOptionText) ? parentSelection.value : parentSelection.id;
+        let parentSelection = this.selectHouse.querySelector('select:last-of-type');
+        return (parentSelection.value !== this.selectAnOptionText) ? parentSelection.value : parentSelection.id;
+    },
+    resetAll(resetButtonId){
+        document.getElementById(resetButtonId).addEventListener('click',()=>{
+            localStorage.clear();
+            this.selectHouse.innerHTML='';
+            this.init();
+        })
     }
 }
 
-
-let resetAll = ()=>{
-    document.getElementById('resetAll').addEventListener('click',()=>{
-        localStorage.clear();
-        dynamicSelect.selectHouse.innerHTML='';
-        dynamicSelect.init();
-    })
-}
