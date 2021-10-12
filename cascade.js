@@ -1,6 +1,3 @@
-
-
-
 const dynamicSelect = {
     init(configs = {
                         selectElementsMainContainerId: 'selectHouse',
@@ -42,7 +39,7 @@ const dynamicSelect = {
         let newOptionValue = this.newOptionBox.value;
         if(!newOptionValue || newOptionValue===""){return false;}
         let parentSelection = this.selectHouse.querySelector('select:last-of-type');
-        let targetNodeValue = (parentSelection.value !== dynamicSelect.selectAnOptionText) ? parentSelection.value : parentSelection.id;
+        let targetNodeValue = (parentSelection.value !== this.selectAnOptionText) ? parentSelection.value : parentSelection.id;
         //console.log(`targetNodeValue:${targetNodeValue}`)
         //console.log(this)
         if (document.getElementById(this.firstSelectBoxId).length === 1) {
