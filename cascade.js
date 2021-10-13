@@ -3,17 +3,19 @@ const dynamicSelect = {
                         selectElementsMainContainerId: 'selectHouse',
                         newOptionTextBoxId: 'newOption',
                         firstSelectBoxId: 'firstSelectBox',
-                        resetButtonId:'resetAll',
+                        reset:{resetItemId:'resetItemId', resetAction:'click'},
                         selectAnOptionText: 'Select an option',
                         mustUnique:false,
                         selectElementsClassName:'selectElements',
          }
     ) {
         this.mustUnique = configs.mustUnique;
+        this.resetConf = {...configs.reset};
+        console.log(this.resetConf);
         this.tempContainer=null;
         this.selectElementsClassName = configs.selectElementsClassName;
         this.firstSelectBoxId=configs.firstSelectBoxId;
-        this.resetAll(configs.resetButtonId);
+        this.reset();
         this.selectAnOptionText=configs.selectAnOptionText;
         let newOptionTextBox = document.createElement('input');
         newOptionTextBox.id = configs.newOptionTextBoxId;
@@ -221,8 +223,8 @@ const dynamicSelect = {
         let parentSelection = this.selectHouse.querySelector('select:last-of-type');
         return (parentSelection.value !== this.selectAnOptionText) ? parentSelection.value : parentSelection.id;
     },
-    resetAll(resetButtonId){
-        document.getElementById(resetButtonId).addEventListener('click',()=>{
+    reset(){
+        document.getElementById(this.resetConf.resetItemId).addEventListener(this.resetConf.resetAction,()=>{
             localStorage.clear();
             this.selectHouse.innerHTML='';
             this.init();

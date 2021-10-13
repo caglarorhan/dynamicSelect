@@ -25,8 +25,9 @@
             selectElementsMainContainerId: 'selectHouse',
             newOptionTextBoxId: 'newOption',
             firstSelectBoxId: 'firstSelectBox',
-            resetButtonId:'resetAll',
+            reset:{resetItemId:'resetItemId', resetAction:'click'},
             selectAnOptionText: 'Select an option',
+            mustUnique:false,
             selectElementsClassName:'selectElements',
             // initData: dummyData
         }
@@ -50,7 +51,7 @@
     }
 </style>
 <body>
-<button id="resetAll">RESET ALL</button>
+<button id="resetItemId">RESET ALL</button>
 <button onclick="alert(dynamicSelect.selectedLastItem())">Last Selected Value</button>
 <div id="selectHouse">
 
